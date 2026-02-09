@@ -1,0 +1,306 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+	<title>Margin - Minimal Online Markdown Editor</title>
+	<style>
+		:root {
+			--bg: #fcfcfc;
+			--text: #1a1a1a;
+			--placeholder: #ccc;
+			color-scheme: light;
+		}
+
+		[data-theme="dark"] {
+			--bg: #222;
+			--text: #d1d1d1;
+			--placeholder: #444;
+			color-scheme: dark;
+		}
+
+		html,
+		body {
+			height: 100%;
+			width: 100%;
+			margin: 0;
+			background-color: var(--bg);
+			color: var(--text);
+			transition: background 0.3s ease, color 0.3s ease;
+		}
+
+		body {
+			font-family: "Georgia", serif;
+		}
+
+		#scroller {
+			width: 100%;
+			height: 100%;
+			overflow-y: auto;
+			display: flex;
+			flex-direction: column;
+			align-items: center;
+			scrollbar-width: none;
+			cursor: text;
+		}
+
+		#scroller::-webkit-scrollbar {
+			display: none;
+		}
+
+		.container {
+			width: 90%;
+			max-width: 750px;
+			margin-top: 80px;
+			padding-bottom: 10vh;
+			cursor: text;
+		}
+
+		#editor {
+			width: 100%;
+			outline: none;
+			font-size: 1.35rem;
+			line-height: 1.5;
+			color: inherit;
+			position: relative;
+			white-space: pre-wrap;
+		}
+
+		#editor.empty-hint::before {
+			content: "Write...";
+			color: var(--placeholder);
+			position: absolute;
+			left: 2px;
+			top: 0;
+			pointer-events: none;
+		}
+
+		h1 {
+			font-weight: normal;
+			font-size: 2.2rem;
+			margin: 0 0 1rem 0;
+			line-height: 1.2;
+		}
+
+		h2 {
+			font-weight: normal;
+			font-size: 1.6rem;
+			margin: 1.5rem 0 0.8rem 0;
+			line-height: 1.2;
+		}
+
+		strike {
+			color: #888;
+		}
+
+		p {
+			font-size: 1.15rem;
+			margin: 0 0 0.2rem 0;
+		}
+
+		.ghost-nav {
+			position: fixed;
+			top: 0;
+			right: 0;
+			padding: 25px 35px;
+			opacity: 0;
+			transition: opacity 0.2s ease;
+			z-index: 100;
+		}
+
+		.ghost-nav:hover {
+			opacity: 1;
+		}
+
+		.theme-toggle {
+			background: none;
+			border: none;
+			color: var(--text);
+			font-size: 1.2rem;
+			cursor: pointer;
+		}
+
+		font[size="3"] {
+			font-size: 1.15rem;
+			line-height: 1.5;
+		}
+
+		font[size="6"],
+		font[size="5"] {
+			font-weight: normal;
+		}
+	</style>
+</head>
+
+<body>
+
+	<nav class="ghost-nav">
+		<button class="theme-toggle" onclick="downloadMarkdown()" title="Download as .md"
+			style="position: fixed; left: 35px;">⤓</button>
+		<button class="theme-toggle" onclick="toggleDark()">◯</button>
+	</nav>
+
+	<div id="scroller" onmousedown="focusEnd(event)">
+		<main class="container">
+			<div id="editor" contenteditable="true" spellcheck="true" autofocus></div>
+		</main>
+	</div>
+
+	<script>
+		const editor = document.getElementById('editor');
+
+		function focusEnd(e) {
+			if (e.target === document.getElementById('scroller') || e.target.tagName === 'MAIN' || e.target.className === 'container') {
+				e.preventDefault();
+				editor.focus({ preventScroll: true });
+
+				const selection = window.getSelection();
+				const range = document.createRange();
+
+				if (editor.lastChild) {
+					range.setStartAfter(editor.lastChild);
+					range.setEndAfter(editor.lastChild);
+				} else {
+					range.selectNodeContents(editor);
+					range.collapse(false);
+				}
+
+				selection.removeAllRanges();
+				selection.addRange(range);
+			}
+		}
+
+		function downloadMarkdown() {
+			let html = editor.innerHTML;
+
+			let md = html
+				.replace(/<font size="6">(.*?)<\/font>/gi, '# $1\n')
+				.replace(/<font size="5">(.*?)<\/font>/gi, '## $1\n')
+				.replace(/<h1>(.*?)<\/h1>/gi, '# $1\n')
+				.replace(/<h2>(.*?)<\/h2>/gi, '## $1\n')
+				.replace(/<b>(.*?)<\/b>|<strong>(.*?)<\/strong>/gi, '**$1**')
+				.replace(/<i>(.*?)<\/i>|<em>(.*?)<\/em>/gi, '*$1*')
+				.replace(/<u>(.*?)<\/u>/gi, '<ins>$1</ins>')
+				.replace(/<strike>(.*?)<\/strike>|<s>(.*?)<\/s>/gi, '~~$1~~')
+				.replace(/<font size="3">(.*?)<\/font>/gi, '$1')
+				.replace(/<p>(.*?)<\/p>/gi, '$1\n\n')
+				.replace(/<div>(.*?)<\/div>/gi, '$1\n')
+				.replace(/<br\s*[\/]?>/gi, '\n')
+				.replace(/&nbsp;/g, ' ')
+				.replace(/<[^>]+>/g, '');
+
+			const blob = new Blob([md.trim()], { type: 'text/markdown' });
+			const tempLink = document.createElement('a');
+			tempLink.href = URL.createObjectURL(blob);
+
+			const rawTitle = editor.innerText.split('\n')[0].trim();
+			const fileName = rawTitle.replace(/[^\w\s]/gi, '').substring(0, 25).trim();
+			tempLink.download = (fileName || 'document') + '.md';
+
+			document.body.appendChild(tempLink);
+			tempLink.click();
+			document.body.removeChild(tempLink);
+		}
+
+		function smartFormat(key) {
+			const selection = window.getSelection();
+			if (!selection.rangeCount) return;
+
+			const range = selection.getRangeAt(0);
+
+			if (range.collapsed) {
+				while (range.startOffset > 0 && !range.startContainer.textContent[range.startOffset - 1].match(/\s/)) {
+					range.setStart(range.startContainer, range.startOffset - 1);
+				}
+				while (range.endOffset < range.endContainer.length && !range.endContainer.textContent[range.endOffset].match(/\s/)) {
+					range.setEnd(range.endContainer, range.endOffset + 1);
+				}
+				selection.removeAllRanges();
+				selection.addRange(range);
+			}
+
+			if (key === 'h' || key === 'm') {
+				const isH = document.queryCommandValue('fontSize') === '6';
+				const isM = document.queryCommandValue('fontSize') === '5';
+
+				if ((key === 'h' && isH) || (key === 'm' && isM)) {
+					document.execCommand('fontSize', false, '3');
+				} else {
+					document.execCommand('fontSize', false, key === 'h' ? '6' : '5');
+				}
+			} else {
+				const commandMap = { 'b': 'bold', 'i': 'italic', 's': 'strikeThrough', 'u': 'underline' };
+				document.execCommand(commandMap[key], false, null);
+			}
+		}
+
+		function toggleHeader(key) {
+			const typeMap = { 'h': 'H1', 'm': 'H2' };
+			const targetTag = typeMap[key];
+
+			const currentBlock = document.queryCommandValue('formatBlock').toUpperCase();
+
+			if (currentBlock === targetTag && targetTag !== 'P') {
+				document.execCommand('formatBlock', false, 'p');
+			} else {
+				document.execCommand('formatBlock', false, targetTag.toLowerCase());
+			}
+		}
+
+
+		function checkEmpty() {
+			const text = editor.innerText.replace(/\n/g, '').trim();
+			if (text === "") editor.classList.add('empty-hint');
+			else editor.classList.remove('empty-hint');
+		}
+
+		window.onload = () => {
+			editor.innerHTML = localStorage.getItem('paper_v16') || '<p><br></p>';
+			document.documentElement.setAttribute('data-theme', localStorage.getItem('theme') || 'light');
+			checkEmpty();
+		};
+
+		function toggleDark() {
+			const target = document.documentElement.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
+			document.documentElement.setAttribute('data-theme', target);
+			localStorage.setItem('theme', target);
+		}
+
+		editor.addEventListener('keydown', (e) => {
+			if (e.key === 'Tab') {
+				e.preventDefault();
+				document.execCommand('insertText', false, '    ');
+			}
+
+			const meta = e.metaKey || e.ctrlKey;
+			if (meta) {
+				const key = e.key.toLowerCase();
+
+				if (['b', 'i', 's', 'u', 'h', 'm'].includes(key)) {
+					e.preventDefault();
+					smartFormat(key);
+				}
+			}
+
+
+			if (e.key === 'Enter') {
+				setTimeout(() => {
+					const block = document.queryCommandValue('formatBlock');
+					if (block === '' || block === 'div') document.execCommand('formatBlock', false, 'p');
+					document.execCommand('fontSize', false, '3');
+				}, 0);
+			}
+		});
+
+		editor.addEventListener('input', () => {
+			localStorage.setItem('paper_v16', editor.innerHTML);
+			checkEmpty();
+		});
+
+		const observer = new MutationObserver(checkEmpty);
+		observer.observe(editor, { childList: true, characterData: true, subtree: true });
+	</script>
+</body>
+
+</html>
