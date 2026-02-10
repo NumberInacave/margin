@@ -4,7 +4,7 @@
 <head>
 	<meta charset="UTF-8">
 	<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-	<title>Margin - Minimal Online Markdown Editor</title>
+	<title>Margin - New</title>
 	<style>
 		:root {
 			--bg: #fcfcfc;
@@ -292,6 +292,15 @@
 				}, 0);
 			}
 		});
+
+		editor.addEventListener('paste', (e) => {
+			e.preventDefault();
+			const text = (e.originalEvent || e).clipboardData.getData('text/plain');
+
+			document.execCommand('insertText', false, text);
+			document.execCommand('fontSize', false, '3');
+		});
+
 
 		editor.addEventListener('input', () => {
 			localStorage.setItem('paper_v16', editor.innerHTML);
