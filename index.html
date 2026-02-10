@@ -28,6 +28,8 @@
 			background-color: var(--bg);
 			color: var(--text);
 			transition: background 0.3s ease, color 0.3s ease;
+			user-select: text;
+			-webkit-user-select: text;
 		}
 
 		body {
@@ -54,7 +56,7 @@
 			max-width: 750px;
 			margin-top: 80px;
 			padding-bottom: 10vh;
-			cursor: text;
+			pointer-events: none;
 		}
 
 		#editor {
@@ -65,6 +67,7 @@
 			color: inherit;
 			position: relative;
 			white-space: pre-wrap;
+			pointer-events: auto;
 		}
 
 		#editor.empty-hint::before {
@@ -141,7 +144,7 @@
 		<button class="theme-toggle" onclick="toggleDark()">◯</button>
 	</nav>
 
-	<div id="scroller" onmousedown="focusEnd(event)">
+	<div id="scroller">
 		<main class="container">
 			<div id="editor" contenteditable="true" spellcheck="true" autofocus></div>
 		</main>
@@ -149,26 +152,17 @@
 
 	<script>
 		const editor = document.getElementById('editor');
+		const scroller = document.getElementById('scroller');
+		let isDragging = false;
 
-		function focusEnd(e) {
-			if (e.target === document.getElementById('scroller') || e.target.tagName === 'MAIN' || e.target.className === 'container') {
-				e.preventDefault();
-				editor.focus({ preventScroll: true });
-
-				const selection = window.getSelection();
-				const range = document.createRange();
-
-				if (editor.lastChild) {
-					range.setStartAfter(editor.lastChild);
-					range.setEndAfter(editor.lastChild);
-				} else {
-					range.selectNodeContents(editor);
-					range.collapse(false);
-				}
-
-				selection.removeAllRanges();
-				selection.addRange(range);
-			}
+		function getCaretFromPoint(x, y) {
+			if (document.caretRangeFromPoint) return document.caretRangeFromPoint(x, y);
+			const pos = document.caretPositionFromPoint(x, y);
+			if (!pos) return null;
+			const range = document.createRange();
+			range.setStart(pos.offsetNode, pos.offset);
+			range.collapse(true);
+			return range;
 		}
 
 		function downloadMarkdown() {
@@ -248,11 +242,16 @@
 			}
 		}
 
-
 		function checkEmpty() {
 			const text = editor.innerText.replace(/\n/g, '').trim();
 			if (text === "") editor.classList.add('empty-hint');
 			else editor.classList.remove('empty-hint');
+		}
+
+		function toggleDark() {
+			const target = document.documentElement.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
+			document.documentElement.setAttribute('data-theme', target);
+			localStorage.setItem('theme', target);
 		}
 
 		window.onload = () => {
@@ -260,12 +259,6 @@
 			document.documentElement.setAttribute('data-theme', localStorage.getItem('theme') || 'light');
 			checkEmpty();
 		};
-
-		function toggleDark() {
-			const target = document.documentElement.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
-			document.documentElement.setAttribute('data-theme', target);
-			localStorage.setItem('theme', target);
-		}
 
 		editor.addEventListener('keydown', (e) => {
 			if (e.key === 'Tab') {
@@ -293,6 +286,38 @@
 			}
 		});
 
+		scroller.addEventListener('mousedown', (e) => {
+			if (e.target === editor) return;
+
+			const selection = window.getSelection();
+			const startRange = getCaretFromPoint(e.clientX, e.clientY);
+
+			if (startRange) {
+				editor.focus();
+
+				if (!e.shiftKey) {
+					selection.collapse(startRange.startContainer, startRange.startOffset);
+				} else {
+					selection.extend(startRange.startContainer, startRange.startOffset);
+				}
+			}
+
+			const onMouseMove = (moveEvent) => {
+				const currentRange = getCaretFromPoint(moveEvent.clientX, moveEvent.clientY);
+				if (currentRange && selection.rangeCount > 0) {
+					selection.extend(currentRange.startContainer, currentRange.startOffset);
+				}
+			};
+
+			const onMouseUp = () => {
+				window.removeEventListener('mousemove', onMouseMove);
+				window.removeEventListener('mouseup', onMouseUp);
+			};
+
+			window.addEventListener('mousemove', onMouseMove);
+			window.addEventListener('mouseup', onMouseUp);
+		});
+
 		editor.addEventListener('paste', (e) => {
 			e.preventDefault();
 			const text = (e.originalEvent || e).clipboardData.getData('text/plain');
@@ -300,7 +325,6 @@
 			document.execCommand('insertText', false, text);
 			document.execCommand('fontSize', false, '3');
 		});
-
 
 		editor.addEventListener('input', () => {
 			localStorage.setItem('paper_v16', editor.innerHTML);
