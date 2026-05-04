@@ -1,338 +1,350 @@
 <!DOCTYPE html>
-<html lang="en" data-theme="light">
+<html lang="en">
 
 <head>
 	<meta charset="UTF-8">
-	<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-	<title>Margin - New</title>
+	<title>margin</title>
 	<style>
 		:root {
-			--bg: #fcfcfc;
+			--bg: #fff;
 			--text: #1a1a1a;
-			--placeholder: #ccc;
-			color-scheme: light;
+			--ui: #eee;
 		}
 
 		[data-theme="dark"] {
-			--bg: #222;
-			--text: #d1d1d1;
-			--placeholder: #444;
-			color-scheme: dark;
+			--bg: #121212;
+			--text: #e0e0e0;
+			--ui: #2d2d2d;
 		}
 
-		html,
-		body {
-			height: 100%;
-			width: 100%;
-			margin: 0;
-			background-color: var(--bg);
-			color: var(--text);
-			transition: background 0.3s ease, color 0.3s ease;
-			user-select: text;
-			-webkit-user-select: text;
-		}
-
-		body {
-			font-family: "Georgia", serif;
-		}
-
-		#scroller {
-			width: 100%;
-			height: 100%;
-			overflow-y: auto;
-			display: flex;
-			flex-direction: column;
-			align-items: center;
+		* {
+			box-sizing: border-box;
 			scrollbar-width: none;
-			cursor: text;
 		}
 
-		#scroller::-webkit-scrollbar {
+		*::-webkit-scrollbar {
 			display: none;
 		}
 
-		.container {
-			width: 90%;
-			max-width: 750px;
-			margin-top: 80px;
-			padding-bottom: 10vh;
-			pointer-events: none;
+		body {
+			margin: 0;
+			background: var(--bg);
+			color: var(--text);
+			font-family: "Georgia", serif;
+			overflow: hidden;
+			transition: background 0.4s ease;
 		}
 
-		#editor {
-			width: 100%;
-			outline: none;
-			font-size: 1.15rem;
-			line-height: 1.5;
-			color: inherit;
-			position: relative;
-			white-space: pre-wrap;
-			pointer-events: auto;
-		}
-
-		#editor.empty-hint::before {
-			content: "Write...";
-			color: var(--placeholder);
-			position: absolute;
-			left: 2px;
-			top: 0;
-			pointer-events: none;
-		}
-
-		h1 {
-			font-weight: normal;
-			font-size: 2.2rem;
-			margin: 0 0 1rem 0;
-			line-height: 1.2;
-		}
-
-		h2 {
-			font-weight: normal;
-			font-size: 1.6rem;
-			margin: 1.5rem 0 0.8rem 0;
-			line-height: 1.2;
-		}
-
-		strike {
-			color: #888;
-		}
-
-		p {
-			font-size: 1.15rem;
-			margin: 0 0 0.2rem 0;
-		}
-
-		.ghost-nav {
+		.ctrls,
+		#count {
 			position: fixed;
-			top: 0;
-			right: 0;
-			padding: 25px 35px;
-			opacity: 0;
-			transition: opacity 0.2s ease;
 			z-index: 100;
+			transition: opacity 0.5s ease;
 		}
 
-		.ghost-nav:hover {
-			opacity: 1;
+		.ctrls {
+			top: 10px;
+			left: 10px;
+			display: flex;
 		}
 
-		.theme-toggle {
+		#count {
+			bottom: 25px;
+			left: 25px;
+			font-size: 12px;
+			opacity: 0.3;
+			pointer-events: none;
+		}
+
+		.focus-hide {
+			opacity: 0 !important;
+			pointer-events: none;
+		}
+
+		#edit::placeholder {
+			color: var(--text);
+			opacity: 0.3;
+		}
+
+		.btn {
 			background: none;
 			border: none;
 			color: var(--text);
-			font-size: 1.2rem;
 			cursor: pointer;
+			font-size: 22px;
+			padding: 25px;
+			opacity: 0.3;
+			transition: opacity 0.2s;
 		}
 
-		font[size="3"] {
-			font-size: 1.15rem;
-			line-height: 1.5;
+		.btn:hover {
+			opacity: 1;
 		}
 
-		font[size="6"],
-		font[size="5"] {
-			font-weight: normal;
+		.wrap {
+			max-width: 650px;
+			margin: 0 auto;
+			height: 100vh;
+			position: relative;
+			padding: 0 20px;
+		}
+
+		textarea,
+		#pre {
+			width: calc(100% - 40px);
+			height: calc(100% - 140px);
+			border: none;
+			outline: none;
+			font-family: inherit;
+			font-size: 16px;
+			line-height: 1.8;
+			padding: 0;
+			margin: 0;
+			background: transparent;
+			position: absolute;
+			top: 100px;
+			left: 20px;
+			white-space: pre-wrap;
+			word-wrap: break-word;
+			overflow-y: scroll;
+			transition: opacity 0.3s ease, transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+		}
+
+		#pre {
+			z-index: 1;
+			color: var(--text);
+		}
+
+		textarea {
+			z-index: 2;
+			color: var(--text);
+			caret-color: var(--text);
+			resize: none;
+			tab-size: 4;
+		}
+
+		.h1 {
+			font-size: 1.8em;
+			display: block;
+			margin: 0.5em 0;
+			border-bottom: 1px solid var(--ui);
+			line-height: 1.2;
+		}
+
+		.h2 {
+			font-size: 1.4em;
+			display: block;
+			margin: 0.5em 0;
+			line-height: 1.2;
+		}
+
+		.b {
+			font-weight: bold;
+		}
+
+		.i {
+			font-style: italic;
+		}
+
+		.u {
+			text-decoration: underline;
+		}
+
+		.s {
+			text-decoration: line-through;
+			opacity: 0.6;
+		}
+
+		.c {
+			font-family: monospace;
+			background: var(--ui);
+			padding: 2px 4px;
+			border-radius: 3px;
+			font-size: 0.9em;
+		}
+
+		.k {
+			font-family: monospace;
+			background: var(--ui);
+			padding: 2px 5px;
+			border-radius: 4px;
+			border-bottom: 2px solid #888;
+			font-size: 0.85em;
+		}
+
+		.li {
+			display: list-item;
+			list-style-type: disc;
+			margin-left: 25px;
+		}
+
+		sup {
+			line-height: 0;
+			font-size: 0.7em;
+			vertical-align: super;
+		}
+
+		sub {
+			line-height: 0;
+			font-size: 0.7em;
+			vertical-align: sub;
 		}
 	</style>
 </head>
 
-<body>
-
-	<nav class="ghost-nav">
-		<button class="theme-toggle" onclick="downloadMarkdown()" title="Download as .md"
-			style="position: fixed; left: 35px;">⤓</button>
-		<button class="theme-toggle" onclick="toggleDark()">◯</button>
-	</nav>
-
-	<div id="scroller">
-		<main class="container">
-			<div id="editor" contenteditable="true" spellcheck="true" autofocus></div>
-		</main>
+<body onmousedown="isDragging=true" onmouseup="handleEnd(event)">
+	<div class="ctrls">
+		<button class="btn" onclick="setTheme()">◯</button>
+		<button class="btn" onclick="down()">⤓</button>
+		<button class="btn" onclick="toggleInfo()">𝓲</button>
 	</div>
-
+	<div id="count">0 words</div>
+	<div class="wrap" id="wrap">
+		<div id="pre"></div>
+		<textarea id="edit" spellcheck="false" autocomplete="off" placeholder="Write..."></textarea>
+	</div>
 	<script>
-		const editor = document.getElementById('editor');
-		const scroller = document.getElementById('scroller');
-		let isDragging = false;
+		const edit = document.getElementById('edit');
+		const pre = document.getElementById('pre');
+		const ctr = document.getElementById('count');
+		const wrap = document.getElementById('wrap');
+		const ctrls = document.querySelector('.ctrls');
+		let isDragging = false, isViewingInfo = false, tempContent = "", focusTimer;
 
-		function getCaretFromPoint(x, y) {
-			if (document.caretRangeFromPoint) return document.caretRangeFromPoint(x, y);
-			const pos = document.caretPositionFromPoint(x, y);
-			if (!pos) return null;
-			const range = document.createRange();
-			range.setStart(pos.offsetNode, pos.offset);
-			range.collapse(true);
-			return range;
-		}
+		const helpDoc = `# h1 header
+## h2 header
+- list (also * or +)
 
-		function downloadMarkdown() {
-			let html = editor.innerHTML;
+**bold**, __bold__ or <b>bold</b>
+*italic*, _italic_ or <i>italic</i>
+***both*** or ___both___
+<u>underline</u>
+~~strike~~ or <del>strike</del>
 
-			let md = html
-				.replace(/<font size="6">(.*?)<\/font>/gi, '# $1\n')
-				.replace(/<font size="5">(.*?)<\/font>/gi, '## $1\n')
-				.replace(/<h1>(.*?)<\/h1>/gi, '# $1\n')
-				.replace(/<h2>(.*?)<\/h2>/gi, '## $1\n')
-				.replace(/<b>(.*?)<\/b>|<strong>(.*?)<\/strong>/gi, '**$1**')
-				.replace(/<i>(.*?)<\/i>|<em>(.*?)<\/em>/gi, '*$1*')
-				.replace(/<u>(.*?)<\/u>/gi, '<ins>$1</ins>')
-				.replace(/<strike>(.*?)<\/strike>|<s>(.*?)<\/s>/gi, '~~$1~~')
-				.replace(/<font size="3">(.*?)<\/font>/gi, '$1')
-				.replace(/<p>(.*?)<\/p>/gi, '$1\n\n')
-				.replace(/<div>(.*?)<\/div>/gi, '$1\n')
-				.replace(/<br\s*[\/]?>/gi, '\n')
-				.replace(/&nbsp;/g, ' ')
-				.replace(/<[^>]+>/g, '');
+\`code\` or <code>code</code>
+<kbd>kbd</kbd>
+H<sub>2</sub>O (subscript)
+E=mc<sup>2</sup> (superscript)`;
 
-			const blob = new Blob([md.trim()], { type: 'text/markdown' });
-			const tempLink = document.createElement('a');
-			tempLink.href = URL.createObjectURL(blob);
+		edit.value = localStorage.getItem('m_doc') || "# example";
+		if (localStorage.getItem('m_th') === 'dark') document.documentElement.setAttribute('data-theme', 'dark');
 
-			const rawTitle = editor.innerText.split('\n')[0].trim();
-			const fileName = rawTitle.replace(/[^\w\s]/gi, '').substring(0, 25).trim();
-			tempLink.download = (fileName || 'document') + '.md';
-
-			document.body.appendChild(tempLink);
-			tempLink.click();
-			document.body.removeChild(tempLink);
-		}
-
-		function smartFormat(key) {
-			const selection = window.getSelection();
-			if (!selection.rangeCount) return;
-
-			const range = selection.getRangeAt(0);
-
-			if (range.collapsed) {
-				while (range.startOffset > 0 && !range.startContainer.textContent[range.startOffset - 1].match(/\s/)) {
-					range.setStart(range.startContainer, range.startOffset - 1);
+		function render() {
+			const val = edit.value;
+			let lines = val.split('\n').map(line => {
+				let p = line.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+				p = p.replace(/&lt;br&gt;/gim, '<br>')
+					.replace(/&lt;b&gt;(.*?)&lt;\/b&gt;/gim, '<span class="b">$1</span>')
+					.replace(/&lt;i&gt;(.*?)&lt;\/i&gt;/gim, '<span class="i">$1</span>')
+					.replace(/&lt;u&gt;(.*?)&lt;\/u&gt;/gim, '<span class="u">$1</span>')
+					.replace(/&lt;del&gt;(.*?)&lt;\/del&gt;/gim, '<span class="s">$1</span>')
+					.replace(/&lt;sup&gt;(.*?)&lt;\/sup&gt;/gim, '<sup>$1</sup>')
+					.replace(/&lt;sub&gt;(.*?)&lt;\/sub&gt;/gim, '<sub>$1</sub>')
+					.replace(/&lt;code&gt;(.*?)&lt;\/code&gt;/gim, '<span class="c">$1</span>')
+					.replace(/&lt;kbd&gt;(.*?)&lt;\/kbd&gt;/gim, '<span class="k">$1</span>');
+				p = p.replace(/\*\*\*(.*?)\*\*\*/g, '<span class="b i">$1</span>')
+					.replace(/___(.*?)___/g, '<span class="b i">$1</span>')
+					.replace(/\*\*(.*?)\*\*/g, '<span class="b">$1</span>')
+					.replace(/__(.*?)__/g, '<span class="b">$1</span>')
+					.replace(/~~(.*?)~~/g, '<span class="s">$1</span>')
+					.replace(/\*(.*?)\*/g, '<span class="i">$1</span>')
+					.replace(/_(.*?)_/g, '<span class="i">$1</span>')
+					.replace(/`(.*?)`/g, '<span class="c">$1</span>');
+				if (p.startsWith('# ')) return `<span class="h1">${p.slice(2)}</span>`;
+				if (p.startsWith('## ')) return `<span class="h2">${p.slice(3)}</span>`;
+				const indentMatch = p.match(/^(\s*)[-*+]\s+(.*)$/);
+				if (indentMatch) {
+					const spaces = indentMatch[1].replace(/\t/g, '    ').length;
+					return `<span class="li" style="margin-left:${(spaces * 10) + 25}px">${indentMatch[2]}</span>`;
 				}
-				while (range.endOffset < range.endContainer.length && !range.endContainer.textContent[range.endOffset].match(/\s/)) {
-					range.setEnd(range.endContainer, range.endOffset + 1);
+				return p.replace(/\t/g, '&nbsp;&nbsp;&nbsp;&nbsp;') || '<br>';
+			});
+			pre.innerHTML = lines.join('\n');
+			ctr.innerText = `${val.trim() ? val.trim().split(/\s+/).length : 0} words`;
+			if (!isViewingInfo) localStorage.setItem('m_doc', val);
+		}
+
+		const resetFocusTimer = () => {
+			ctrls.classList.remove('focus-hide');
+			clearTimeout(focusTimer);
+			focusTimer = setTimeout(() => {
+				if (document.activeElement === edit) {
+					ctrls.classList.add('focus-hide');
 				}
-				selection.removeAllRanges();
-				selection.addRange(range);
-			}
-
-			if (key === 'h' || key === 'm') {
-				const isH = document.queryCommandValue('fontSize') === '6';
-				const isM = document.queryCommandValue('fontSize') === '5';
-
-				if ((key === 'h' && isH) || (key === 'm' && isM)) {
-					document.execCommand('fontSize', false, '3');
-				} else {
-					document.execCommand('fontSize', false, key === 'h' ? '6' : '5');
-				}
-			} else {
-				const commandMap = { 'b': 'bold', 'i': 'italic', 's': 'strikeThrough', 'u': 'underline' };
-				document.execCommand(commandMap[key], false, null);
-			}
-		}
-
-		function toggleHeader(key) {
-			const typeMap = { 'h': 'H1', 'm': 'H2' };
-			const targetTag = typeMap[key];
-
-			const currentBlock = document.queryCommandValue('formatBlock').toUpperCase();
-
-			if (currentBlock === targetTag && targetTag !== 'P') {
-				document.execCommand('formatBlock', false, 'p');
-			} else {
-				document.execCommand('formatBlock', false, targetTag.toLowerCase());
-			}
-		}
-
-		function checkEmpty() {
-			const text = editor.innerText.replace(/\n/g, '').trim();
-			if (text === "") editor.classList.add('empty-hint');
-			else editor.classList.remove('empty-hint');
-		}
-
-		function toggleDark() {
-			const target = document.documentElement.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
-			document.documentElement.setAttribute('data-theme', target);
-			localStorage.setItem('theme', target);
-		}
-
-		window.onload = () => {
-			editor.innerHTML = localStorage.getItem('paper_v16') || '<p><br></p>';
-			document.documentElement.setAttribute('data-theme', localStorage.getItem('theme') || 'light');
-			checkEmpty();
+			}, 2000);
 		};
 
-		editor.addEventListener('keydown', (e) => {
+		edit.addEventListener('mousemove', resetFocusTimer);
+		edit.addEventListener('keydown', resetFocusTimer);
+		edit.addEventListener('focus', resetFocusTimer);
+		edit.addEventListener('blur', () => ctrls.classList.remove('focus-hide'));
+		edit.addEventListener('keydown', function (e) {
 			if (e.key === 'Tab') {
 				e.preventDefault();
-				document.execCommand('insertText', false, '    ');
+				const s = this.selectionStart, f = this.selectionEnd;
+				this.value = this.value.substring(0, s) + "\t" + this.value.substring(f);
+				this.selectionStart = this.selectionEnd = s + 1;
 			}
-
-			const meta = e.metaKey || e.ctrlKey;
-			if (meta) {
-				const key = e.key.toLowerCase();
-
-				if (['b', 'i', 's', 'u', 'h', 'm'].includes(key)) {
-					e.preventDefault();
-					smartFormat(key);
-				}
-			}
-
-
 			if (e.key === 'Enter') {
-				setTimeout(() => {
-					const block = document.queryCommandValue('formatBlock');
-					if (block === '' || block === 'div') document.execCommand('formatBlock', false, 'p');
-					document.execCommand('fontSize', false, '3');
-				}, 0);
-			}
-		});
-
-		scroller.addEventListener('mousedown', (e) => {
-			if (e.target === editor) return;
-
-			const selection = window.getSelection();
-			const startRange = getCaretFromPoint(e.clientX, e.clientY);
-
-			if (startRange) {
-				editor.focus();
-
-				if (!e.shiftKey) {
-					selection.collapse(startRange.startContainer, startRange.startOffset);
-				} else {
-					selection.extend(startRange.startContainer, startRange.startOffset);
+				const start = this.selectionStart;
+				const line = this.value.substring(0, start).split('\n').pop();
+				const match = line.match(/^(\s*[-*+]\s+)/);
+				if (match && line.trim().length > match[0].trim().length) {
+					e.preventDefault();
+					const bullet = "\n" + match[0];
+					this.value = this.value.substring(0, start) + bullet + this.value.substring(this.selectionEnd);
+					this.selectionStart = this.selectionEnd = start + bullet.length;
 				}
 			}
-
-			const onMouseMove = (moveEvent) => {
-				const currentRange = getCaretFromPoint(moveEvent.clientX, moveEvent.clientY);
-				if (currentRange && selection.rangeCount > 0) {
-					selection.extend(currentRange.startContainer, currentRange.startOffset);
-				}
-			};
-
-			const onMouseUp = () => {
-				window.removeEventListener('mousemove', onMouseMove);
-				window.removeEventListener('mouseup', onMouseUp);
-			};
-
-			window.addEventListener('mousemove', onMouseMove);
-			window.addEventListener('mouseup', onMouseUp);
 		});
 
-		editor.addEventListener('paste', (e) => {
-			e.preventDefault();
-			const text = (e.originalEvent || e).clipboardData.getData('text/plain');
+		function toggle(isEditing) {
+			if (isEditing) {
+				edit.style.opacity = "1"; edit.style.pointerEvents = "auto";
+				edit.style.transform = "scale(1)"; pre.style.opacity = "0";
+				pre.style.transform = "scale(0.98)"; edit.scrollTop = pre.scrollTop;
+			} else {
+				edit.style.opacity = "0"; edit.style.pointerEvents = "none";
+				edit.style.transform = "scale(0.98)"; pre.style.opacity = "1";
+				pre.style.transform = "scale(1)"; pre.scrollTop = edit.scrollTop;
+				render();
+			}
+		}
 
-			document.execCommand('insertText', false, text);
-			document.execCommand('fontSize', false, '3');
-		});
+		function toggleInfo() {
+			if (!isViewingInfo) { tempContent = edit.value; edit.value = helpDoc; isViewingInfo = true; toggle(true); }
+			else { edit.value = tempContent; isViewingInfo = false; toggle(false); }
+			render();
+		}
 
-		editor.addEventListener('input', () => {
-			localStorage.setItem('paper_v16', editor.innerHTML);
-			checkEmpty();
-		});
+		function handleEnd(e) {
+			isDragging = false;
+			if (e.target.tagName === 'BUTTON') return;
+			const isOutside = (e.target === document.body || e.target === wrap);
+			if (isOutside && !window.getSelection().toString()) { edit.blur(); toggle(false); }
+			else if (!isOutside && document.activeElement !== edit) {
+				const rect = pre.getBoundingClientRect();
+				const relY = (e.clientY - rect.top) + pre.scrollTop;
+				const lines = edit.value.split('\n');
+				let pos = 0, targetLine = Math.min(Math.floor(relY / (16 * 1.8)), lines.length - 1);
+				for (let i = 0; i < targetLine; i++) pos += lines[i].length + 1;
+				toggle(true); edit.focus(); edit.setSelectionRange(pos, pos);
+			}
+		}
 
-		const observer = new MutationObserver(checkEmpty);
-		observer.observe(editor, { childList: true, characterData: true, subtree: true });
+		edit.oninput = render;
+		function setTheme() {
+			const cur = document.documentElement.getAttribute('data-theme');
+			const next = cur === 'dark' ? 'light' : 'dark';
+			document.documentElement.setAttribute('data-theme', next);
+			localStorage.setItem('m_th', next);
+		}
+		function down() {
+			const a = document.createElement('a');
+			a.href = URL.createObjectURL(new Blob([isViewingInfo ? tempContent : edit.value], { type: 'text/markdown' }));
+			a.download = 'margin.md'; a.click();
+		}
+		render(); toggle(false);
 	</script>
 </body>
 
