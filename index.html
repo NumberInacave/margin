@@ -46,6 +46,7 @@
 			top: 10px;
 			left: 10px;
 			display: flex;
+			transition: opacity 0.5s ease;
 		}
 
 		#count {
@@ -265,17 +266,15 @@ E=mc<sup>2</sup> (superscript)`;
 		}
 
 		const resetFocusTimer = () => {
-			ctrls.classList.remove('focus-hide');
+			ctrls.classList.remove("focus-hide");
 			clearTimeout(focusTimer);
 			focusTimer = setTimeout(() => {
-				if (document.activeElement === edit) {
-					ctrls.classList.add('focus-hide');
-				}
-			}, 2000);
+				if (document.activeElement === edit) ctrls.classList.add("focus-hide");
+			}, 1000);
 		};
 
-		edit.addEventListener('mousemove', resetFocusTimer);
-		edit.addEventListener('keydown', resetFocusTimer);
+		edit.oninput = () => { render(); resetFocusTimer(); };
+		edit.addEventListener("mousemove", resetFocusTimer);
 		edit.addEventListener('focus', resetFocusTimer);
 		edit.addEventListener('blur', () => ctrls.classList.remove('focus-hide'));
 		edit.addEventListener('keydown', function (e) {
@@ -298,15 +297,17 @@ E=mc<sup>2</sup> (superscript)`;
 			}
 		});
 
-		function toggle(isEditing) {
-			if (isEditing) {
+		function toggle(e) {
+			if (e) {
 				edit.style.opacity = "1"; edit.style.pointerEvents = "auto";
 				edit.style.transform = "scale(1)"; pre.style.opacity = "0";
 				pre.style.transform = "scale(0.98)"; edit.scrollTop = pre.scrollTop;
+				resetFocusTimer();
 			} else {
 				edit.style.opacity = "0"; edit.style.pointerEvents = "none";
 				edit.style.transform = "scale(0.98)"; pre.style.opacity = "1";
 				pre.style.transform = "scale(1)"; pre.scrollTop = edit.scrollTop;
+				ctrls.classList.remove("focus-hide");
 				render();
 			}
 		}
