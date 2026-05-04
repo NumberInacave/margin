@@ -1,6 +1,5 @@
 # Margin
-Minimal Online Markdown Editor
-
+Minimal Online Markdown Editor<br>
 https://numberinacave.github.io/margin/
 
 ## Details
